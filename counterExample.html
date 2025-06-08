@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <style>
+      :root {
+        --counterButtonColor: blue;
+      }
+      h3 {
+        color: red;
+      }
+      .container {
+        --counterButtonColor: green;
+      }
+    </style>
+    <h3>Hello world</h3>
+
+    <div id="container"></div>
+
+    <let-counter value="0" min="0" max="10"> </let-counter>
+    <div class="container">
+      <let-counter value="0"> </let-counter>
+    </div>
+
+    <template id="template">
+      <style>
+        :host {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+        button {
+          --size: 60px;
+          width: var(--size);
+          height: var(--size);
+          background-color: var(--counterButtonColor, #f0be5c);
+          border-radius: 50%;
+          border: 0;
+          color: black;
+        }
+        h3 {
+          margin: 0;
+        }
+      </style>
+
+      <button id="subtract">-</button>
+      <h3></h3>
+      <button id="add">+</button>
+    </template>
+
+    <script>
+      class Card extends HTMLElement {
+        constructor() {
+          super();
+
+          this.add = this.add.bind(this);
+          this.subtract = this.subtract.bind(this);
+
+          this.attachShadow({ mode: 'open' });
+
+          const template = document.getElementById('template');
+
+          // const heading = document.createElement("h2");
+          // heading.textContent = "Hello World....";
+          const clone = template.content.cloneNode(true);
+          this.shadowRoot.appendChild(clone);
+          this.shadowRoot.querySelector('h3').innerHTML = this.value;
+          this.valueHeader = this.shadowRoot.querySelector('h3');
+
+          this.valueHeader.innerHTML = this.value;
+          this.subtractButton = this.shadowRoot.querySelector('#subtract');
+          this.addButton = this.shadowRoot.querySelector('#add');
+        }
+
+        connectedCallback() {
+          this.subtractButton.addEventListener('click', this.subtract);
+          this.addButton.addEventListener('click', this.add);
+        }
+
+        subtract() {
+          console.log('cliked');
+          const min = +this.min;
+          console.log('min', min);
+          if (min < this.value) {
+            this.value = +this.value - 1;
+          }
+        }
+
+        add() {
+          console.log('add clicked');
+
+          const max = +this.max;
+          if (max > this.value) {
+            this.value = +this.value + 1;
+          }
+        }
+
+        disconnectedCallback() {
+          this.subtractButton.removeEventListener('click', this.subtract);
+          this.addButton.removeEventListener('click', this.add);
+        }
+
+        static get observedAttributes() {
+          return ['value', 'min', 'max'];
+        }
+
+        attributeChangedCallback(attrName, oldVal, newVal) {
+          this.valueHeader.innerHTML = this.value;
+        }
+
+        adoptedCallback() {}
+
+        get value() {
+          return this.getAttribute('value');
+        }
+
+        get min() {
+          return this.getAttribute('min');
+        }
+
+        get max() {
+          return this.getAttribute('max');
+        }
+
+        set value(val) {
+          this.setAttribute('value', val);
+        }
+      }
+      customElements.define('let-counter', Card);
+
+      // const template = document.getElementById("first-template");
+
+      // const container = document.getElementById("container");
+
+      // const clone = template.content.cloneNode(true);
+      // clone.addEventListener("click", () => {
+      //   alert("clicked clone 1");
+      // });
+      // container.appendChild(clone);
+
+      // const clone2 = template.content.firstElementChild.cloneNode(true);
+      // clone2.addEventListener("click", () => {
+      //   alert("clicked clone 2");
+      // });
+      // container.appendChild(clone2);
+    </script>
+  </body>
+</html>

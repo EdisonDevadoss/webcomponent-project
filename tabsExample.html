@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <style>
+      lut-tabs {
+        border: solid 1px #ccc;
+        display: block;
+        margin-bottom: 1rem;
+      }
+
+      [role='tab'] {
+        border: solid 1px #ccc;
+        background: #ddd;
+        transition: 0.2s ease transform, 0.2s ease background;
+      }
+
+      [role='tab'][aria-selected="true"]{
+        background: white;
+        border-bottom: none;
+        transform: translate3d(0, 2px, 0);
+      }
+
+       [role='panel'] {
+        padding: 20px;
+        border: solid 1px #ccc;
+      }
+    </style>
+
+    <lut-tabs>
+      <div role="tablist">
+        <button tabindex="0" aria-selected="true" role="tab">One</button>
+        <button tabindex="-1" role="tab">Two</button>
+        <button tabindex="-1" role="tab">Three</button>
+      </div>
+      <div tabindex="0" aria-selected="true" role="panel">One</div>
+      <div tabindex="-1" role="panel" hidden>Two</div>
+      <div tabindex="-1" role="panel" hidden>Three</div>
+    </lut-tabs>
+
+    <lut-tabs>
+      <div role="tablist">
+        <button tabindex="0" aria-selected="true" role="tab">One</button>
+        <button tabindex="-1" role="tab">Two</button>
+        <button tabindex="-1" role="tab">Three</button>
+      </div>
+      <div tabindex="0" aria-selected="true" role="panel">One</div>
+      <div tabindex="-1" role="panel" hidden>Two</div>
+      <div tabindex="-1" role="panel" hidden>Three</div>
+    </lut-tabs>
+
+    <script>
+      function getTabs(element) {
+        const tabs = Array.from(
+          element.querySelectorAll('[role="tablist"] [role="tab"]')
+        );
+        console.log('tabs', tabs);
+        return tabs;
+      }
+
+      function getPanels(element) {
+        const panels = Array.from(element.querySelectorAll('[role="panel"]'));
+        return panels;
+      }
+
+      function selectTab(element, index) {
+        const tabs = getTabs(element);
+        const panels = getPanels(element);
+
+        for (const tab of tabs) {
+          tab.setAttribute('tabindex', -1);
+          tab.setAttribute('aria-selected', false);
+        }
+
+        for (const panel of panels) {
+          panel.hidden = true;
+          panel.setAttribute('aria-selected', false);
+          panel.setAttribute('tabindex', -1);
+        }
+
+        const selectedTab = tabs[index];
+        const selectedPanel = panels[index];
+
+        selectedTab.focus();
+        selectedTab.setAttribute('aria-selected', true);
+        selectedTab.setAttribute('tabindex', 0);
+
+        selectedPanel.hidden = false;
+        selectedPanel.setAttribute('aria-selected', true);
+        selectedPanel.setAttribute('tabindex', 0);
+
+        element.dispatchEvent(
+          new Event('lut-tab-changes', {
+            bubbles: true,
+            detail: {
+              relatedTarge: selectedPanel
+            }
+          })
+        );
+      }
+
+      class Tabs extends HTMLElement {
+        constructor() {
+          super();
+
+          this.addEventListener('keydown', (event) => {
+            console.log('event', event.target);
+
+            const tabs = getTabs(this);
+            const currentIndex = tabs.indexOf(
+              tabs.find((tab) => tab.matches('[aria-selected="true"]'))
+            );
+
+            console.log('currentIndex', currentIndex);
+
+            if (event.code === 'ArrowLeft') {
+              let newIndex = currentIndex - 1;
+
+              if (newIndex < 0) {
+                newIndex = 0;
+              }
+              console.log('newIndex', newIndex);
+              selectTab(this, newIndex);
+            } else if (event.code === 'ArrowRight') {
+              let newIndex = currentIndex + 1;
+
+              if (newIndex >= tabs.length) newIndex = tabs.length - 1;
+              console.log('newIndex', newIndex);
+              selectTab(this, newIndex);
+            }
+          });
+
+          this.addEventListener('click', (event) => {
+            const tabs = getTabs(this);
+
+            const tab = event.target.closest('[role=tab]');
+            console.log('tab', tab);
+
+            if (!tab?.closest('[role="tablist"]')) return;
+
+            const index = tabs.indexOf(tab);
+            console.log('index is', index);
+
+            selectTab(this, index);
+          });
+        }
+
+        connectedCallback() {
+          // let tabs = getTabs();
+          // console.log('tabs is', tabs);
+        }
+      }
+
+      customElements.define('lut-tabs', Tabs);
+    </script>
+  </body>
+</html>
