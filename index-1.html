@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <style>
+      lut-button {
+        background-color: red;
+        padding: 20px;
+      }
+    </style>
+    <lut-button>Hello</lut-button>
+    <script>
+      class LutButton extends HTMLElement {
+        constructor() {
+          super();
+
+          this.addEventListener('click', () => {
+            console.log('cliked');
+          });
+        }
+
+        connectedCallback() {
+          console.log('connectedCallback is callback');
+        }
+      }
+
+      customElements.define('lut-button', LutButton);
+    </script>
+  </body>
+</html>
